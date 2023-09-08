@@ -1,0 +1,218 @@
+class node:
+    def __init__(self, valor):
+        self.value = valor
+        self.left = None
+        self.right = None
+    
+    def __repr__(self):
+        return '%s <- %s -> %s' % (self.left and self.left.value, self.value, self.right and self.right.value)
+
+class tree:
+    def __init__(self, valor=None):
+        self.raiz = node(valor)
+        self.count = 0
+    
+    def _inserir(self, value, no):
+        if no.left is None:
+            no.left = node(value)
+        elif no.right is None:
+            no.right = node(value)
+        else:
+            if no.left.right is None:
+                self._inserir(value, no.left)
+            else:
+                self._inserir(value, no.right)
+        
+    def insert(self, value):
+        if self.raiz is None:
+            self.raiz = node(value)
+        else:
+            self._inserir(value, self.raiz)
+
+    def _preorder(self, no):
+        if no:
+            #mostrando o primeiro valor(raiz)
+            print(no.value, end=" - ")
+            #verifica se o nó da esquerda é vazia, se não for ele chama a função novamente, mas passando o valor
+            #do nó a esquerda
+            if no.left is not None:
+                self._preorder(no.left)
+            #faz o mesmo processo acima mas verificando o nó a direita, se inicialmente não houver nó a esquerda
+            #
+            if no.right is not None:
+                self._preorder(no.right)
+    
+    def pre_order(self):
+        self._preorder(self.raiz)
+        print()
+
+    def _inorder(self, no):
+        if no is not None:
+            self._inorder(no.left)
+            print(no.value, end=" > ")
+            self._inorder(no.right)
+    
+    def in_order(self):
+        self._inorder(self.raiz)
+        print()
+
+    def _postorder(self, no):
+        if no:
+            self._postorder(no.left)
+            self._postorder(no.right)
+            print(no.value, end=" -> ")
+    
+    def post_order(self):
+        self._postorder(self.raiz)
+        print()
+
+    def level_order(self):
+        if self.raiz is None:
+            return
+        
+        nos = [self.raiz]
+        while nos:
+            no = nos.pop(0)
+            print(no.value, end=" <-> ")
+            if no.left:
+                nos.append(no.left)
+            if no.right:
+                nos.append(no.right)
+        print()
+            
+    def _reper(self, no):
+        s = ''
+        if no is not None:
+            s += '%s <- %s -> %s \n' % (no.left and no.left.value, no.value, no.right and no.right.value)
+            s += self._reper(no.left)
+            s += self._reper(no.right)
+        return s
+
+    def represent(self):
+        return self._reper(self.raiz)
+    
+    def binary_search_recursive(self, value, no):
+        if no is None:
+            return False
+        elif value == no.value: 
+            return True
+        elif value < no.value:
+            return self.binary_search_recursive(value, no.left) 
+        elif value > no.value:
+            return self.binary_search_recursive(value, no.right)  
+
+    def binary_search(self, value):
+        if self.raiz is None:
+            return False
+        else:
+            return self.binary_search_recursive(value, self.raiz) 
+
+    def return_raiz(self):
+        return self.raiz.value
+            
+    def nos_recursivo(self,no,children=False,inter_no=False):
+        if no is None:
+            return 0
+        current_level = [no]
+        chill = []
+        inter_node = []
+        while current_level:
+            next_level = []
+            for no in current_level:
+                if no.left is None:
+                    chill.append(no.value)
+                else:
+                    inter_node.append(no.value)
+                if no.left:
+                    next_level.append(no.left)
+                if no.right:
+                    next_level.append(no.right)
+            current_level = next_level
+        if children:
+            return chill
+        if inter_no:
+            return inter_node
+    
+    def tree_height_recursive(self, no):
+        if no is None:
+            return 0
+
+        left_height = self.tree_height_recursive(no.left)
+        right_height = self.tree_height_recursive(no.right)
+
+        return max(left_height, right_height) + 1
+
+    def tree_height(self):
+        return self.tree_height_recursive(self.raiz) - 1
+        
+    def nos(self,children=False,inter_no=False):
+        if children:
+            return self.nos_recursivo(self.raiz,children=True)
+        if inter_no:
+            return self.nos_recursivo(self.raiz,inter_no=True)
+        return self.nos_recursivo(self.raiz)
+    
+import random
+import os
+
+
+def funcoes(op,arvore=None):
+    if op == 0:
+        if arvore is  None:
+            valores = []
+            valor = input('Digite quantos valores deseja inserir: ')
+            for i in range(int(valor)):
+                valores.append(int(input(f'Digite o {i + 1}° dado: ')))
+            arvore = tree(valores[0])
+            for i in range(1, len(valores)):
+                arvore.insert(valores[i])      
+            print('Valor inserido com sucesso!')
+        else:
+            valor = int(input('Digite o valor que deseja inserir: '))
+            arvore.insert(valor)
+        menu(arvore)
+    if op == 1:
+        print(f'A raiz da árvore é: {arvore.return_raiz()}')
+        menu(arvore)
+    if op == 2:
+        print(f'Os nós internos são: {arvore.nos(inter_no=True)}')
+        menu(arvore)
+    if op == 3:
+        print(f'Os nós folhas são: {arvore.nos(children=True)}')
+        menu(arvore)
+    if op == 4:
+        valor = int(input('Digite um valor para buscar na árvore: '))
+        busca = arvore.binary_search(valor)
+        if busca:
+            print(f'O valor {valor} está na árvore')
+        else:
+            print(f'O valor {valor} não está na árvore')
+        menu(arvore)
+    if op == 5:
+        print(f'O tamanho da árvore é: {arvore.tree_height()}')
+        menu(arvore)
+    if op == 6:
+        arvore.level_order()
+        menu(arvore)
+    if op == 7:
+        print('Até breve!')
+        exit()
+
+
+def menu(arvore=None):
+    print('=*'*25)
+    print(f'''{"Menu":^50}
+{"0 - Inserir número na árvore":^50}
+{"1 - Mostrar Raiz da árvore":^50}
+{"2 - Mostrar nós internos":^50}
+{"3 - Mostrar nós folhas":^50}
+{"4 - Digite um valor para buscar dentro da árvore":^50}
+{"5 - Mostrar altura da árvore":^50}
+{"6 - Mostrar árvore":^50}
+{"7 - sair":^50}
+''')
+    print('=*'*25)
+    select = int(input('Escolha a Opção: '))
+    funcoes(select,arvore)
+
+menu()
